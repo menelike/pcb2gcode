@@ -297,7 +297,6 @@ void ExcellonProcessor::export_ngc(const string of_dir, const boost::optional<st
 
     of << preamble_ext;        //insert external preamble file
     of << preamble;            //insert internal preamble
-    of << "G00 S" << left << driller->speed << "     (RPM spindle speed.)\n" << "\n";
 
     //tiling->header( of );     // See TODO #2
 
@@ -306,16 +305,15 @@ void ExcellonProcessor::export_ngc(const string of_dir, const boost::optional<st
         if (zchange_absolute) {
             of << "G53 ";
         }
-        of << "G00 Z" << driller->zchange * cfactor << " (Retract)\n" << "T"
-           << hole.first << "\n" << "M5      (Spindle stop.)\n"
+        of << hole.first << "\n" << "M5      (Spindle stop.)\n"
            << "G04 P" << driller->spindown_time
            << "\n(MSG, Change tool bit to drill size "
            << drill_to_string(bit) << ")\n"
-           << "M6      (Tool change.)\n"
-           << "M0      (Temporary machine stop.)\n"
-           << "M3      (Spindle on clockwise.)\n"
+           << "M0 Tool change.\n"
+           << "M3 S" << left << driller->speed << "\n"
            << "G0 Z" << driller->zsafe * cfactor << "\n"
-           << "G04 P" << driller->spinup_time << "\n\n";
+           << "G04 P" << driller->spinup_time << "\n"
+           << "M226 P017 S0\n";
 
         if( nog81 )
             of << "G1 F" << driller->feed * cfactor << '\n';
@@ -613,10 +611,10 @@ void ExcellonProcessor::export_ngc(const string of_dir, const boost::optional<st
        << "M5        (Spindle stop.)\n"
        << "G04 P" << target->spindown_time << "\n"
        << "(MSG, Change tool bit to drill size " << (bMetricOutput ? (target->tool_diameter * 25.4) : target->tool_diameter) << (bMetricOutput ? "mm" : "inch") << ")\n"
-       << "M6        (Tool change.)\n"
-       << "M0        (Temporary machine stop.)\n"
-       << "M3        (Spindle on clockwise.)\n"
+       << "M0 Tool change.\n"
+       << "M3 S" << left << target->speed << "\n"
        << "G04 P" << target->spinup_time << "\n"
+       << "M226 P017 S0\n"
        << "G00 Z" << target->zsafe * cfactor << "\n\n";
 
     tiling->header( of );

@@ -1,6 +1,6 @@
 /*
  * This file is part of pcb2gcode.
- * 
+ *
  * Copyright (C) 2009, 2010 Patrick Birnzain <pbirnzain@users.sourceforge.net> and others
  * Copyright (C) 2010 Bernhard Kubicek <kubicek@gmx.at>
  * Copyright (C) 2013 Erik Schuster <erik@muenchen-ist-toll.de>
@@ -10,12 +10,12 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * pcb2gcode is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with pcb2gcode.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -78,10 +78,10 @@ void NGC_Exporter::export_all(boost::program_options::variables_map& options)
     bMetricoutput = options["metricoutput"].as<bool>();      //set flag for metric output
     bZchangeG53 = options["zchange-absolute"].as<bool>();
     string outputdir = options["output-dir"].as<string>();
-    
+
     //set imperial/metric conversion factor for output coordinates depending on metricoutput option
     cfactor = bMetricoutput ? 25.4 : 1;
-    
+
     tileInfo = Tiling::generateTileInfo( options, board->get_height(), board->get_width() );
 
     for ( string layername : board->list_layers() )
@@ -277,8 +277,7 @@ void NGC_Exporter::export_layer(shared_ptr<Layer> layer, string of_name, boost::
          << "G20 ( Units == INCHES. )\n\n";
     }
 
-    of << "G90 ( Absolute coordinates. )\n"
-       << "G00 S" << left << mill->speed << " ( RPM spindle speed. )\n";
+    of << "G90 ( Absolute coordinates. )\n";
 
     if (mill->explicit_tolerance) {
       of << "G64 P" << mill->tolerance * cfactor << " ( set maximum deviation from commanded toolpath )\n";
@@ -336,10 +335,10 @@ void NGC_Exporter::export_layer(shared_ptr<Layer> layer, string of_name, boost::
       } else {
         of << tool_diameter << "in)" << endl;
       }
-      of << "M6      (Tool change.)" << endl
-         << "M0      (Temporary machine stop.)" << endl
-         << "M3 ( Spindle on clockwise. )" << endl
-         << "G04 P" << mill->spinup_time << " (Wait for spindle to get up to speed)" << endl;
+      of << "M0 Tool change." << endl
+         << "M3 S" << left << mill->speed << endl
+         << "G04 P" << mill->spinup_time << " (Wait for spindle to get up to speed)" << endl
+         << "M226 P017 S0"  << endl;
 
       tiling.header( of );
 
